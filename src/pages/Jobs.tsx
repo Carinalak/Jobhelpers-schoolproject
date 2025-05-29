@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FilterBtnYrke } from "../components/FilterBtnYrke";
 import { JobsPresentation } from "../components/JobsPresentation";
@@ -11,8 +11,12 @@ import { ActionType } from "../reducers/JobReducer";
 export const Jobs = () => {
   const { jobs, dispatch } = useContext(JobContext);
   const [searchParams, setSearchParams] = useSearchParams();
+
   const pageParam = searchParams.get("page");
   const searchTermParam = searchParams.get("searchTerm");
+  const occupationsParam = decodeURIComponent(
+    searchParams.get("occupations") || ""
+  );
 
   const [currentPage, setCurrentPage] = useState<number>(
     pageParam ? parseInt(pageParam) : 1
@@ -22,50 +26,45 @@ export const Jobs = () => {
     searchTermParam || ""
   );
 
-  const occupationsParam = decodeURIComponent(
-    searchParams.get("occupations") || ""
+  const fetchJobs = useCallback(
+    async (term: string, page: number, occupations?: string) => {
+      try {
+        const totalHits = 100; // Justera om API ger faktisk träffsumma
+        const jobsPerPage = JOBS_PER_PAGE;
+
+        const jobs = await getJobsBySearch(term, page, occupations);
+        dispatch({ type: ActionType.SEARCHED, payload: jobs });
+
+        setTotalPages(Math.ceil(totalHits / jobsPerPage));
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    },
+    [dispatch]
   );
 
-  const fetchJobs = async (
-    term: string,
-    page: number,
-    //occupationsParam: string | null // occupations?: string | null
-  ) => {
-    try {
-      const totalHits = 100;
-      const jobsPerPage = JOBS_PER_PAGE;
-
-      const jobs = await getJobsBySearch(term, page);
-      dispatch({ type: ActionType.SEARCHED, payload: jobs });
-
-      setTotalPages(Math.ceil(totalHits / jobsPerPage));
-    } catch (error) {
-      console.error("Error fetching jobs:", error);
-    }
-  };
-
   useEffect(() => {
     fetchJobs(activeSearchTerm, currentPage, occupationsParam);
-  }, [currentPage, activeSearchTerm, occupationsParam]);
-
-  useEffect(() => {
-    fetchJobs(activeSearchTerm, currentPage, occupationsParam);
-
-    // Dispatch an action to filter jobs based on occupationsParam
     dispatch({ type: ActionType.FILTER_JOBS, payload: occupationsParam });
-  }, [currentPage, activeSearchTerm, occupationsParam]);
+  }, [currentPage, activeSearchTerm, occupationsParam, fetchJobs, dispatch]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    setSearchParams({ page: String(newPage), searchTerm: activeSearchTerm });
-    fetchJobs(activeSearchTerm, newPage);
+    setSearchParams({
+      page: String(newPage),
+      searchTerm: activeSearchTerm,
+      occupations: occupationsParam,
+    });
   };
 
   const handleSearch = (term: string) => {
     setActiveSearchTerm(term);
     setCurrentPage(1);
-    setSearchParams({ page: "1", searchTerm: term });
-    fetchJobs(term, 1);
+    setSearchParams({
+      page: "1",
+      searchTerm: term,
+      occupations: occupationsParam,
+    });
   };
 
   return (

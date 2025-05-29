@@ -17,6 +17,11 @@ import { OccupationContext } from "../contexts/OccupationContext";
 import { ActionType } from "../reducers/OccupationReducer";
 import { useSearchParams } from "react-router-dom";
 
+type SelectedOccupation = {
+  groupId: string;
+  narrowerIds?: string[];
+};
+
 export const OccupationsList = () => {
   const [occupationsGroup, setOccupationsGruop] = useState<IOccupation[]>([]);
 
@@ -113,20 +118,19 @@ export const OccupationsList = () => {
   };
 
   const handleSubmit = () => {
-    const selectedOccupations = occupationsGroup.flatMap((group) => {
-      const narrowerIds = selectedNarrower[group.id] || [];
+    const selectedOccupations: SelectedOccupation[] = occupationsGroup.flatMap((group) => {
+  const narrowerIds = selectedNarrower[group.id] || [];
 
-      const isAllNarrowerSelected =
-        narrowerIds.length === group.narrower.length;
+  const isAllNarrowerSelected =
+    narrowerIds.length === group.narrower.length;
 
-      if (isAllNarrowerSelected || narrowerIds.length === 0) {
-        return [{ groupId: group.id }];
-      } else if (narrowerIds.length > 0) {
-        return [{ groupId: group.id, narrowerIds: narrowerIds }];
-      } else {
-        return [];
-      }
-    });
+  if (isAllNarrowerSelected || narrowerIds.length === 0) {
+    return [{ groupId: group.id }];
+  } else {
+    return [{ groupId: group.id, narrowerIds }];
+  }
+});
+
 
     dispatch({
       type: ActionType.FILTER_OCCUPATIONS,
@@ -134,14 +138,15 @@ export const OccupationsList = () => {
     });
 
     const occupationParams = selectedOccupations
-      .map((occupation) => {
-        if (occupation.narrower.ids) {
-          return `${occupation.groupId}-${occupation.narrowerIds.join(",")}`;
-        } else {
-          return occupation.groupId;
-        }
-      })
-      .join(";");
+  .map((occupation) => {
+    if (occupation.narrowerIds && occupation.narrowerIds.length > 0) {
+      return `${occupation.groupId}-${occupation.narrowerIds.join(",")}`;
+    } else {
+      return occupation.groupId;
+    }
+  })
+  .join(";");
+
 
     const activeSearchTerm = searchParams.get("searchTerm") || "";
 
