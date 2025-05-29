@@ -1,6 +1,6 @@
 # Case AF Team 7 - Jobbhjälparna
 
-Detta är ett skolprojekt som jag, Per, Jessica och Marcus gjorde i oktober 2024 när vi lärde oss JavaScript och React. Vi fick använda oss av Arbetsförmedlingens öppna data för studenter.
+Detta är ett skolprojekt som jag, Per Rosen, Jessica och Marcus gjorde i oktober 2024 när vi lärde oss JavaScript och React. Vi fick använda oss av Arbetsförmedlingens öppna data för studenter.
 
 <hr>  
 
