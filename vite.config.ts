@@ -7,5 +7,5 @@ export default defineConfig({
     exclude: ["@digi/arbetsformedlingen"],
   },
   plugins: [react()],
-  base: '/case-af-team-7/',
+  base: '/Jobhelpers-schoolproject/',
 });
