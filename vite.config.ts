@@ -7,5 +7,5 @@ export default defineConfig({
     exclude: ["@digi/arbetsformedlingen"],
   },
   plugins: [react()],
-  base: '/https://carinalak.github.io/Jobhelpers-schoolproject/',
+  base: '/Jobhelpers-schoolproject/',
 });
